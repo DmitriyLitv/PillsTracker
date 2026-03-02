@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <AssemblyName>PillsTracker.WebApi</AssemblyName>
+    <RootNamespace>PillsTracker.WebApi</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../PillsTracker.Application/PillsTracker.Application.csproj" />
+    <ProjectReference Include="../PillsTracker.Infrastructure/PillsTracker.Infrastructure.csproj" />
+    <ProjectReference Include="../PillsTracker.Contracts/PillsTracker.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+  </ItemGroup>
+</Project>
