@@ -7,8 +7,4 @@
     <ProjectReference Include="../PillsTracker.Domain/PillsTracker.Domain.csproj" />
     <ProjectReference Include="../PillsTracker.Contracts/PillsTracker.Contracts.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-  </ItemGroup>
 </Project>

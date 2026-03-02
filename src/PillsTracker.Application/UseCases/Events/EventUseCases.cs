@@ -98,7 +98,7 @@ public abstract class EventCommandHandlerBase<TCommand>(
     ICurrentUser currentUser,
     IClock clock,
     IUnitOfWork unitOfWork) : ICommandHandler<TCommand, ReminderEventDto>
-    where TCommand : ICommand<ReminderEventDto>
+    where TCommand : notnull
 {
     public async Task<ReminderEventDto> Handle(TCommand command, CancellationToken ct)
     {
