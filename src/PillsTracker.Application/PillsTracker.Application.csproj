@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>PillsTracker.Application</AssemblyName>
+    <RootNamespace>PillsTracker.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../PillsTracker.Domain/PillsTracker.Domain.csproj" />
+    <ProjectReference Include="../PillsTracker.Contracts/PillsTracker.Contracts.csproj" />
+  </ItemGroup>
+</Project>
