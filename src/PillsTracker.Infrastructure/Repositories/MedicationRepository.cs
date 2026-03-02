@@ -17,13 +17,6 @@ public sealed class MedicationRepository(PillsTrackerDbContext dbContext) : IMed
             .ToListAsync(ct)
             .ContinueWith<IReadOnlyList<Medication>>(t => t.Result, ct);
 
-    public Task<IReadOnlyList<Medication>> GetByOwnerAsync(Guid ownerUserId, CancellationToken ct)
-        => dbContext.Medications
-            .Where(x => x.OwnerUserId == ownerUserId)
-            .OrderBy(x => x.Name)
-            .ToListAsync(ct)
-            .ContinueWith<IReadOnlyList<Medication>>(t => t.Result, ct);
-
     public Task AddAsync(Medication medication, CancellationToken ct)
         => dbContext.Medications.AddAsync(medication, ct).AsTask();
 
