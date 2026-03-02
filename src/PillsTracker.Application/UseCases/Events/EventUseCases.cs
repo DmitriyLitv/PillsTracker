@@ -44,26 +44,40 @@ public sealed class GetUpcomingEventsHandler(
 
 public sealed class TakeEventHandler : EventCommandHandlerBase<TakeEventCommand>
 {
-    public TakeEventHandler(IReminderEventRepository eventRepository, IIntakeLogRepository logRepository, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork)
+    public TakeEventHandler(
+        IReminderEventRepository eventRepository,
+        IIntakeLogRepository logRepository,
+        ICurrentUser currentUser,
+        IClock clock,
+        IUnitOfWork unitOfWork)
         : base(eventRepository, logRepository, currentUser, clock, unitOfWork)
     {
     }
 
+    protected override Guid GetEventId(TakeEventCommand command) => command.EventId;
     protected override ReminderEventStatus GetStatus() => ReminderEventStatus.Taken;
     protected override IntakeAction GetAction() => IntakeAction.Take;
-    protected override DateTimeOffset ResolveMoment(TakeEventCommand command, DateTimeOffset now) => Parsing.ParseDateTimeOrNow(command.TakenAtUtc, now);
+    protected override DateTimeOffset ResolveMoment(TakeEventCommand command, DateTimeOffset now)
+        => Parsing.ParseDateTimeOrNow(command.TakenAtUtc, now);
 }
 
 public sealed class SkipEventHandler : EventCommandHandlerBase<SkipEventCommand>
 {
-    public SkipEventHandler(IReminderEventRepository eventRepository, IIntakeLogRepository logRepository, ICurrentUser currentUser, IClock clock, IUnitOfWork unitOfWork)
+    public SkipEventHandler(
+        IReminderEventRepository eventRepository,
+        IIntakeLogRepository logRepository,
+        ICurrentUser currentUser,
+        IClock clock,
+        IUnitOfWork unitOfWork)
         : base(eventRepository, logRepository, currentUser, clock, unitOfWork)
     {
     }
 
+    protected override Guid GetEventId(SkipEventCommand command) => command.EventId;
     protected override ReminderEventStatus GetStatus() => ReminderEventStatus.Skipped;
     protected override IntakeAction GetAction() => IntakeAction.Skip;
-    protected override DateTimeOffset ResolveMoment(SkipEventCommand command, DateTimeOffset now) => Parsing.ParseDateTimeOrNow(command.SkippedAtUtc, now);
+    protected override DateTimeOffset ResolveMoment(SkipEventCommand command, DateTimeOffset now)
+        => Parsing.ParseDateTimeOrNow(command.SkippedAtUtc, now);
 }
 
 public sealed class SnoozeEventHandler(
@@ -97,24 +111,28 @@ public abstract class EventCommandHandlerBase<TCommand>(
     IIntakeLogRepository logRepository,
     ICurrentUser currentUser,
     IClock clock,
-    IUnitOfWork unitOfWork) : ICommandHandler<TCommand, ReminderEventDto>
-    where TCommand : notnull
+    IUnitOfWork unitOfWork)
+    : ICommandHandler<TCommand, ReminderEventDto>
+    where TCommand : ICommand<ReminderEventDto> 
 {
     public async Task<ReminderEventDto> Handle(TCommand command, CancellationToken ct)
     {
-        var eventId = command switch
-        {
-            TakeEventCommand take => take.EventId,
-            SkipEventCommand skip => skip.EventId,
-            _ => throw new InvalidOperationException("Unknown event command.")
-        };
+        var eventId = GetEventId(command);
 
-        var evt = await eventRepository.GetByIdAsync(eventId, ct) ?? throw new InvalidOperationException("Event not found.");
-        if (evt.UserId != currentUser.UserId) throw new InvalidOperationException("Cannot modify foreign event.");
+        var evt = await eventRepository.GetByIdAsync(eventId, ct)
+            ?? throw new InvalidOperationException("Event not found.");
+
+        if (evt.UserId != currentUser.UserId)
+            throw new InvalidOperationException("Cannot modify foreign event.");
 
         var at = ResolveMoment(command, clock.UtcNow);
+
         evt.SetStatus(GetStatus(), at);
-        await logRepository.AddAsync(new IntakeLog(Guid.NewGuid(), currentUser.UserId, evt.Id, GetAction(), at), ct);
+
+        await logRepository.AddAsync(
+            new IntakeLog(Guid.NewGuid(), currentUser.UserId, evt.Id, GetAction(), at),
+            ct
+        );
 
         eventRepository.Update(evt);
         await unitOfWork.SaveChangesAsync(ct);
@@ -122,6 +140,7 @@ public abstract class EventCommandHandlerBase<TCommand>(
         return evt.ToDto();
     }
 
+    protected abstract Guid GetEventId(TCommand command);
     protected abstract ReminderEventStatus GetStatus();
     protected abstract IntakeAction GetAction();
     protected abstract DateTimeOffset ResolveMoment(TCommand command, DateTimeOffset now);

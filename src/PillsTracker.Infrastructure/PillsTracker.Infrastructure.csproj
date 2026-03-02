@@ -4,12 +4,11 @@
     <RootNamespace>PillsTracker.Infrastructure</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../PillsTracker.Application/PillsTracker.Application.csproj" />
-    <ProjectReference Include="../PillsTracker.Domain/PillsTracker.Domain.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
+    <ProjectReference Include="../PillsTracker.Application/PillsTracker.Application.csproj" />
+    <ProjectReference Include="../PillsTracker.Domain/PillsTracker.Domain.csproj" />
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@ using PillsTracker.Contracts.Plans;
 using PillsTracker.Contracts.Transfer;
 using PillsTracker.Domain.Entities;
 using PillsTracker.Domain.Enums;
+using System.Globalization;
 
 namespace PillsTracker.Application.UseCases.Transfer;
 
@@ -20,9 +21,16 @@ public sealed class ExportHandler(
 {
     public async Task<ExportDto> Handle(ExportQuery query, CancellationToken ct)
     {
-        var meds = (await medicationRepository.GetByOwnerAsync(currentUser.UserId, ct)).Select(x => x.ToDto()).ToList();
-        var anchors = (await timeAnchorRepository.GetByOwnerAsync(currentUser.UserId, ct)).Select(x => x.ToDto()).ToList();
+        var meds = (await medicationRepository.GetGlobalAndByOwnerAsync(currentUser.UserId, ct))
+            .Select(x => x.ToDto())
+            .ToList();
+
+        var anchors = (await timeAnchorRepository.GetSystemAndByOwnerAsync(currentUser.UserId, ct))
+            .Select(x => x.ToDto())
+            .ToList();
+
         var plans = await intakePlanRepository.GetByUserAsync(currentUser.UserId, ct);
+
         var planDtos = new List<PlanDto>(plans.Count);
         foreach (var p in plans)
         {
@@ -76,7 +84,11 @@ public sealed class ImportHandler(
             var slots = planDto.Slots.Select(s =>
             {
                 var kind = Enum.TryParse<SlotKind>(s.Kind, true, out var k) ? k : SlotKind.FixedTime;
-                var fixedTime = string.IsNullOrWhiteSpace(s.FixedTime) ? null : TimeOnly.ParseExact(s.FixedTime, "HH:mm");
+
+                TimeOnly? fixedTime = string.IsNullOrWhiteSpace(s.FixedTime)
+                    ? (TimeOnly?)null
+                    : TimeOnly.ParseExact(s.FixedTime, "HH:mm", CultureInfo.InvariantCulture);
+
                 return new IntakeTimeSlot(Guid.NewGuid(), planId, kind, fixedTime, s.AnchorKey, s.Instruction);
             }).ToList();
 
