@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>PillsTracker.Domain</AssemblyName>
+    <RootNamespace>PillsTracker.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>
