@@ -61,7 +61,6 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Action).HasConversion<string>().IsRequired();
             entity.Property(x => x.Note).HasMaxLength(1000);
-            entity.Property(x => x.Dosage).HasMaxLength(100).IsRequired();
         });
     }
 }
