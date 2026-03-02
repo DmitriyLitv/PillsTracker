@@ -20,13 +20,6 @@ public sealed class TimeAnchorRepository(PillsTrackerDbContext dbContext) : ITim
             .ToListAsync(ct)
             .ContinueWith<IReadOnlyList<TimeAnchor>>(t => t.Result, ct);
 
-    public Task<IReadOnlyList<TimeAnchor>> GetByOwnerAsync(Guid ownerUserId, CancellationToken ct)
-        => dbContext.TimeAnchors
-            .Where(x => x.OwnerUserId == ownerUserId)
-            .OrderBy(x => x.Key)
-            .ToListAsync(ct)
-            .ContinueWith<IReadOnlyList<TimeAnchor>>(t => t.Result, ct);
-
     public Task AddAsync(TimeAnchor anchor, CancellationToken ct)
         => dbContext.TimeAnchors.AddAsync(anchor, ct).AsTask();
 
