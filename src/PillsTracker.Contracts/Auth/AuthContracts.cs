@@ -1,0 +1,6 @@
+namespace PillsTracker.Contracts.Auth;
+
+public sealed record RegisterRequest(string Email, string Password);
+public sealed record LoginRequest(string Email, string Password, string? TimeZoneId);
+public sealed record AuthResponse(string AccessToken, string RefreshToken);
+public sealed record RefreshRequest(string RefreshToken, string? TimeZoneId);
