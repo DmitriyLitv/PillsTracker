@@ -1,20 +1,20 @@
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using PillsTracker.Infrastructure.Persistence;
-using Testcontainers.PostgreSql;
 
 namespace PillsTracker.Tests.Integration;
 
 public sealed class WebApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
+    private readonly IContainer _postgres = new ContainerBuilder()
         .WithImage("postgres:16-alpine")
-        .WithDatabase("pillstracker_tests")
-        .WithUsername("postgres")
-        .WithPassword("postgres")
+        .WithEnvironment("POSTGRES_DB", "pillstracker_tests")
+        .WithEnvironment("POSTGRES_USER", "postgres")
+        .WithEnvironment("POSTGRES_PASSWORD", "postgres")
+        .WithPortBinding(5432, true)
+        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -23,20 +23,9 @@ public sealed class WebApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:Postgres"] = _postgres.GetConnectionString(),
-                ["Jwt:Issuer"] = "PillsTrackerTests",
-                ["Jwt:Audience"] = "PillsTrackerTestsClients",
-                ["Jwt:Key"] = "test-super-secret-key-test-super-secret-key",
-                ["Jwt:AccessTokenMinutes"] = "60"
+                ["ConnectionStrings:Postgres"] =
+                    $"Host=localhost;Port={_postgres.GetMappedPublicPort(5432)};Database=pillstracker_tests;Username=postgres;Password=postgres"
             });
-        });
-
-        builder.ConfigureServices(services =>
-        {
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<PillsTrackerDbContext>();
-            db.Database.EnsureCreated();
         });
     }
 
